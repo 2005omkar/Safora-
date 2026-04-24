@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crime Trend Analysis</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial;
+}
+
+body{
+background:#0b1a2a;
+color:white;
+}
+
+/* NAVBAR */
+
+nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:12px 40px;
+background:#081422;
+}
+
+nav a{
+color:white;
+text-decoration:none;
+margin-left:20px;
+font-size:14px;
+}
+
+/* HERO */
+
+.hero{
+text-align:center;
+padding:30px 10px;
+}
+
+.hero h1{
+font-size:28px;
+margin-bottom:5px;
+}
+
+.hero p{
+font-size:14px;
+color:#ccc;
+}
+
+/* CONTAINER */
+
+.container{
+width:90%;
+max-width:1100px;
+margin:auto;
+}
+
+/* CARD */
+
+.card{
+background:#13243a;
+padding:15px;
+margin-top:20px;
+border-radius:8px;
+}
+
+/* GRID */
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+/* LOCATION */
+
+.location{
+margin-top:10px;
+font-size:14px;
+}
+
+.risk{
+margin-top:10px;
+font-size:18px;
+font-weight:bold;
+}
+
+.high{color:#ff4d4d;}
+.medium{color:#ffb84d;}
+.low{color:#66ff66;}
+
+button{
+margin-top:10px;
+padding:6px 12px;
+border:none;
+border-radius:4px;
+background:#ff4d4d;
+color:white;
+cursor:pointer;
+}
+
+/* CHART SIZE */
+
+canvas{
+max-height:220px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav>
+
+<div><h1>SAFORA – AI Powered City Safety Platform<h1></div>
+
+<div>
+<!-- <a href="#">Home</a>
+<a href="#">Crime Map</a>
+<a href="#">Reports</a>
+<a href="#">Safety Score</a>
+<a href="#">Crime Trend</a>
+</div> -->
+
+</nav>
+
+
+<!-- HERO -->
+
+<div class="hero">
+
+<h1>Crime Trend Analysis</h1>
+<p>Live crime analytics and safety prediction based on your location</p>
+
+</div>
+
+
+<div class="container">
+
+<!-- LOCATION CARD -->
+
+<div class="card">
+
+<h3>📍 Live Location Safety</h3>
+
+<div id="location" class="location">
+Click button to detect location
+</div>
+
+<div id="risk" class="risk"></div>
+
+<button onclick="getLocation()">Check My Safety</button>
+
+</div>
+
+
+<!-- TREND CHART -->
+
+<div class="card">
+
+<h3>Crime Trend</h3>
+
+<canvas id="trendChart"></canvas>
+
+</div>
+
+
+<!-- GRID CHARTS -->
+
+<div class="grid">
+
+<div class="card">
+
+<h3>Crime Type</h3>
+
+<canvas id="crimePie"></canvas>
+
+</div>
+
+<div class="card">
+
+<h3>Area Crime</h3>
+
+<canvas id="areaChart"></canvas>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>Time Based Crime</h3>
+
+<canvas id="timeChart"></canvas>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* DATA FOR DIFFERENT AREAS */
+
+const crimeData={
+
+Hazratganj:{
+trend:[120,150,180,140,200,170],
+type:[40,25,15,10,10],
+area:[120,90,70,60],
+time:[50,70,120,200],
+risk:"High Risk"
+},
+
+GomtiNagar:{
+trend:[80,90,100,110,95,120],
+type:[30,20,20,15,15],
+area:[80,70,60,50],
+time:[40,60,90,100],
+risk:"Medium Risk"
+},
+
+Aliganj:{
+trend:[40,50,60,55,65,70],
+type:[20,15,15,20,30],
+area:[40,35,30,25],
+time:[20,30,40,50],
+risk:"Low Risk"
+}
+
+}
+
+
+/* LOCATION DETECTION */
+
+function getLocation(){
+
+if(navigator.geolocation){
+
+navigator.geolocation.getCurrentPosition(showPosition)
+
+}else{
+
+alert("Location not supported")
+
+}
+
+}
+
+
+function showPosition(position){
+
+let lat=position.coords.latitude
+let lon=position.coords.longitude
+
+document.getElementById("location").innerHTML=
+"Lat: "+lat.toFixed(3)+" | Lon: "+lon.toFixed(3)
+
+
+let area=""
+
+if(lat>26.84 && lat<26.86){
+
+area="Hazratganj"
+
+}else if(lat>26.88){
+
+area="GomtiNagar"
+
+}else{
+
+area="Aliganj"
+
+}
+
+loadCrimeData(area)
+
+}
+
+
+/* LOAD AREA DATA */
+
+function loadCrimeData(area){
+
+let data=crimeData[area]
+
+document.getElementById("risk").innerHTML=
+"Safety Level : "+data.risk
+
+trendChart.data.datasets[0].data=data.trend
+pieChart.data.datasets[0].data=data.type
+areaChart.data.datasets[0].data=data.area
+timeChart.data.datasets[0].data=data.time
+
+trendChart.update()
+pieChart.update()
+areaChart.update()
+timeChart.update()
+
+}
+
+
+/* CHARTS */
+
+let trendChart=new Chart(document.getElementById("trendChart"),{
+
+type:"line",
+
+data:{
+labels:["Jan","Feb","Mar","Apr","May","Jun"],
+datasets:[{
+label:"Crime Reports",
+data:[0,0,0,0,0,0],
+borderColor:"orange",
+fill:false
+}]
+}
+
+})
+
+
+let pieChart=new Chart(document.getElementById("crimePie"),{
+
+type:"pie",
+
+data:{
+labels:["Theft","Robbery","Assault","Harassment","Other"],
+datasets:[{
+data:[0,0,0,0,0],
+backgroundColor:[
+"#ff4d4d",
+"#ffb84d",
+"#ffd633",
+"#66ff66",
+"#66ccff"
+]
+}]
+}
+
+})
+
+
+let areaChart=new Chart(document.getElementById("areaChart"),{
+
+type:"bar",
+
+data:{
+labels:["Hazratganj","Gomti Nagar","Aliganj","Indira Nagar"],
+datasets:[{
+label:"Crime Count",
+data:[0,0,0,0],
+backgroundColor:"#ff884d"
+}]
+}
+
+})
+
+
+let timeChart=new Chart(document.getElementById("timeChart"),{
+
+type:"bar",
+
+data:{
+labels:["Morning","Afternoon","Evening","Night"],
+datasets:[{
+label:"Crime Frequency",
+data:[0,0,0,0],
+backgroundColor:"#ff4d4d"
+}]
+}
+
+})
+
+</script>
+
+</body>
+</html>

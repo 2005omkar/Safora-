@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>City Safety Heatmap | Live Location Safety Index</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+<div class="safety-dashboard">
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="logo">🌆 City Safety Heatmap</div>
+        <!-- <div class="nav-links">
+            <a href="#" class="active">Home</a>
+            <a href="#">Crime Map</a>
+            <a href="#">Reports</a>
+            <a href="#">Safety Score</a>
+            <a href="#">Contact</a>
+        </div> -->
+    </div>
+
+    <!-- Header / Women Safety Index -->
+    <div class="hero">
+        <h1>👩‍🦱 Women Safety Index</h1>
+        <p>Check how safe an area is for women based on live location, recent crime data, lighting, and security presence.</p>
+    </div>
+
+    <div class="main-grid">
+        <!-- Left side: location & controls -->
+        <div class="control-card">
+            <!-- Live Location Section -->
+            <div class="location-section">
+                <div class="label">📍 Live Location</div>
+                <div class="location-status" id="locationStatus">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <span id="statusText">Click "Get My Location" to start</span>
+                </div>
+                <button class="btn-location" id="getLocationBtn">
+                    🎯 Get My Location
+                </button>
+                <div class="location-details" id="locationDetails" style="display: none;">
+                    <div class="detail-item">
+                        <span>Latitude:</span>
+                        <span id="latValue">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Longitude:</span>
+                        <span id="lngValue">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Area Type:</span>
+                        <span id="areaTypeValue">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Manual Override Section -->
+            <div class="manual-section">
+                <div class="label">🔧 Manual Override</div>
+                <div class="area-selector">
+                    <span class="label-sub">Or Select Area Manually</span>
+                    <select id="areaSelect">
+                        <option value="auto">📍 Use Live Location (Auto)</option>
+                        <option value="Downtown">🏙️ Downtown</option>
+                        <option value="City Center">🌆 City Center</option>
+                        <option value="Residential Zone">🏘️ Residential Zone</option>
+                        <option value="Industrial Area">🏭 Industrial Area</option>
+                        <option value="Commercial District">🛍️ Commercial District</option>
+                        <option value="Suburban">🌳 Suburban Area</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Safety Parameters -->
+            <div class="params-section">
+                <div class="label">⚙️ Safety Parameters</div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>💡 Street Lighting Score</span>
+                        <span class="slider-value" id="lightingValue">8</span>
+                    </div>
+                    <input type="range" id="lightingSlider" min="0" max="10" step="1" value="8">
+                    <div class="slider-labels">
+                        <span>Poor</span><span>Average</span><span>Excellent</span>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>👮 Police Presence</span>
+                        <span class="slider-value" id="policeValue">7</span>
+                    </div>
+                    <input type="range" id="policeSlider" min="0" max="10" step="1" value="7">
+                    <div class="slider-labels">
+                        <span>Low</span><span>Moderate</span><span>High</span>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>⚠️ Recent Crime Rate</span>
+                        <span class="slider-value" id="crimeValue">5</span>
+                    </div>
+                    <input type="range" id="crimeSlider" min="0" max="10" step="1" value="5">
+                    <div class="slider-labels">
+                        <span>Low Crime</span><span>Moderate</span><span>High Crime</span>
+                    </div>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>🏪 CCTV & Surveillance</span>
+                        <span class="slider-value" id="cctvValue">6</span>
+                    </div>
+                    <input type="range" id="cctvSlider" min="0" max="10" step="1" value="6">
+                    <div class="slider-labels">
+                        <span>Few Cameras</span><span>Moderate</span><span>Extensive</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-calculate" id="calcBtn">🔍 Update Safety Score</button>
+        </div>
+
+        <!-- Right side: safety score card with map -->
+        <div class="score-card">
+            <div class="score-header">
+                <h3>⭐ Women Safety Score ⭐</h3>
+            </div>
+            
+            <!-- Mini Map Display -->
+            <div class="map-container">
+                <div id="miniMap"></div>
+                <div class="map-attribution">📍 Your live location on map</div>
+            </div>
+            
+            <div class="score-circle" id="circleContainer">
+                <div class="circle" id="progressCircle">
+                    <div class="inner-score">
+                        <div class="score-number" id="scoreNumber">78</div>
+                        <div class="score-max">/ 100</div>
+                        <div class="safety-status" id="safetyStatusText">Moderate Safety</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="score-details">
+                <div class="detail-row">
+                    <span>📍 Current Area:</span>
+                    <span id="currentArea">Not set</span>
+                </div>
+                <div class="detail-row">
+                    <span>🔦 Lighting:</span>
+                    <span id="detailLighting">8.0/10</span>
+                </div>
+                <div class="detail-row">
+                    <span>🚔 Police Presence:</span>
+                    <span id="detailPolice">7.0/10</span>
+                </div>
+                <div class="detail-row">
+                    <span>📹 CCTV Coverage:</span>
+                    <span id="detailCCTV">6.0/10</span>
+                </div>
+                <div class="detail-row">
+                    <span>📉 Crime Impact:</span>
+                    <span id="detailCrimeImpact">—</span>
+                </div>
+                <div class="detail-row">
+                    <span>🏙️ Area Factor:</span>
+                    <span id="detailAreaBonus">—</span>
+                </div>
+            </div>
+            <div class="status-badge" id="recommendBadge">🟡 Moderate vigilance recommended</div>
+            <div class="last-updated" id="lastUpdated">Last updated: --</div>
+        </div>
+    </div>
+    <div class="footer">
+        © 2000 City Safety Heatmap | AI Powered City Safety Platform | Real-time Location-Based Safety Analysis
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

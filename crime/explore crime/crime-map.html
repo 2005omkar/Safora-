@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SAFORA - Explore Crime Map</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="/crime/explore crime/crime-map.html"/>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+    }
+
+    .container {
+      display: flex;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: #111;
+      color: white;
+      padding: 20px;
+      height: 100vh;
+    }
+
+    .sidebar select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Filters</h2>
+    <label>Crime Type:</label>
+    <select id="filter">
+      <option value="All">All</option>
+      <option value="Theft">Theft</option>
+      <option value="Accident">Accident</option>
+      <option value="Assault">Assault</option>
+    </select>
+  </div>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+  var map = L.map('map').setView([28.6139, 77.2090], 12); // Delhi/NCR
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  // Sample crime data
+  var crimes = [
+    { type: "Theft", desc: "Phone stolen", lat: 28.61, lng: 77.20, time: "2 hrs ago" },
+    { type: "Accident", desc: "Car crash", lat: 28.62, lng: 77.21, time: "1 hr ago" },
+    { type: "Assault", desc: "Street fight", lat: 28.63, lng: 77.22, time: "30 min ago" }
+  ];
+
+  var markers = [];
+
+  function loadMarkers(filter) {
+    // Remove old markers
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    crimes.forEach(c => {
+      if (filter === "All" || c.type === filter) {
+        var marker = L.marker([c.lat, c.lng]).addTo(map)
+          .bindPopup(
+            "<b>" + c.type + "</b><br>" +
+            c.desc + "<br>" +
+            "<small>" + c.time + "</small>"
+          );
+
+        markers.push(marker);
+      }
+    });
+  }
+
+  // Initial load
+  loadMarkers("All");
+
+  // Filter change
+  document.getElementById("filter").addEventListener("change", function() {
+    loadMarkers(this.value);
+  });
+
+</script>
